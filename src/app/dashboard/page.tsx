@@ -29,6 +29,12 @@ function formatMonth(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
+function todayLocal() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
 function isSameDay(a: string, b: string) {
   return a.slice(0, 10) === b.slice(0, 10);
 }
@@ -72,7 +78,7 @@ export default function DashboardPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocal();
 
   async function fetchWithAuth(input: RequestInfo, init: RequestInit = {}) {
     const session = await supabase.auth.getSession();
