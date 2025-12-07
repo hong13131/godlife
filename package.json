@@ -11,6 +11,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },
+  "postinstall": "prisma generate",
   "dependencies": {
     "@prisma/client": "^5.15.0",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
