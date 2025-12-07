@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/supabase";
 
@@ -10,9 +10,10 @@ async function ensureUser(authUserId: string) {
 }
 
 export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } },
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const { user } = await getUserFromRequest(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -27,14 +28,14 @@ export async function PATCH(
     body;
 
   const goal = await prisma.goal.findFirst({
-    where: { id: params.id, userId: me.id },
+    where: { id, userId: me.id },
   });
   if (!goal) {
     return NextResponse.json({ error: "Goal not found" }, { status: 404 });
   }
 
   const updated = await prisma.goal.update({
-    where: { id: params.id },
+    where: { id },
     data: {
       title,
       targetCount: targetCount !== undefined ? Number(targetCount) : undefined,
@@ -51,9 +52,10 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } },
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const { user } = await getUserFromRequest(req);
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -64,7 +66,7 @@ export async function DELETE(
   }
 
   await prisma.goal.deleteMany({
-    where: { id: params.id, userId: me.id },
+    where: { id, userId: me.id },
   });
 
   return NextResponse.json({ ok: true });
