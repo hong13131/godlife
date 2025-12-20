@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Goal not found" }, { status: 404 });
   }
 
-  const checkDate = new Date(date);
+  const checkDate = new Date(`${date}T00:00:00.000Z`);
 
   const upserted = await prisma.check.upsert({
     where: { goalId_date: { goalId, date: checkDate } },
@@ -74,7 +74,7 @@ export async function DELETE(req: Request) {
   }
 
   await prisma.check.deleteMany({
-    where: { goalId, date: new Date(date) },
+    where: { goalId, date: new Date(`${date}T00:00:00.000Z`) },
   });
 
   return NextResponse.json({ ok: true });

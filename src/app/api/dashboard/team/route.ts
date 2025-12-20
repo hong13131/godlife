@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserFromRequest } from "@/lib/supabase";
 
+function formatKstDate(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(date);
+}
+
 type MemberSummary = {
   id: string;
   name: string | null;
@@ -56,7 +66,9 @@ export async function GET(req: Request) {
       totalTarget > 0 ? Math.min(100, Math.round((totalDone / totalTarget) * 100)) : 0;
 
     const recentChecks = u.goals
-      .flatMap((g) => g.checks.map((c) => ({ date: c.date.toISOString(), goalTitle: g.title })))
+      .flatMap((g) =>
+        g.checks.map((c) => ({ date: formatKstDate(c.date), goalTitle: g.title })),
+      )
       .sort((a, b) => (a.date < b.date ? 1 : -1))
       .slice(0, 3);
 

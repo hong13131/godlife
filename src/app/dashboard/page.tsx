@@ -29,14 +29,23 @@ function formatMonth(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function todayLocal() {
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  return local.toISOString().slice(0, 10);
+function formatKstDate(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return formatter.format(date);
+}
+
+function toDateKey(input: string) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+  return formatKstDate(new Date(input));
 }
 
 function isSameDay(a: string, b: string) {
-  return a.slice(0, 10) === b.slice(0, 10);
+  return toDateKey(a) === toDateKey(b);
 }
 
 function daysInMonth(monthStr: string) {
@@ -78,7 +87,7 @@ export default function DashboardPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const today = todayLocal();
+  const [today, setToday] = useState(() => formatKstDate(new Date()));
 
   async function fetchWithAuth(input: RequestInfo, init: RequestInit = {}) {
     const session = await supabase.auth.getSession();
@@ -278,6 +287,13 @@ export default function DashboardPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setToday(formatKstDate(new Date()));
+    }, 30_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const selectedGoal = goals.find((g) => g.id === selectedGoalId) || null;
   const calendarDays = daysInMonth(month);
